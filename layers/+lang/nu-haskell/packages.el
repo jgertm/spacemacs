@@ -30,9 +30,6 @@
 ;;; Code:
 (defconst nu-haskell-packages
   '((company-ghc :requires company)
-    ;; flycheck
-    ;; (flycheck-haskell :requires flycheck)
-    ;; (flycheck-stack :requires flycheck)
     haskell-mode
     ggtags
     ghc))
@@ -46,20 +43,6 @@
         :backends (company-ghc company-dabbrev-code company-yasnippet)
         :modes haskell-mode))))
 
-;; (defun nu-haskell/post-init-flycheck ()
-;;   (spacemacs/enable-flycheck 'haskell-mode))
-
-;; (defun nu-haskell/init-flycheck-haskell ()
-;;   (use-package flycheck-haskell
-;;     :commands flycheck-haskell-configure
-;;     :init (add-hook 'flycheck-mode-hook 'flycheck-haskell-setup)))
-
-;; (defun nu-haskell/init-flycheck-stack ()
-;;   (use-package flycheck-stack
-;;     :defer t
-;;     :init (add-hook 'flycheck-mode-hook (lambda ()
-;;                                           (flycheck-select-checker 'stack)
-;;                                           (flycheck-mode)))))
 
 (defun nu-haskell/init-haskell-mode ()
   (use-package haskell-mode
