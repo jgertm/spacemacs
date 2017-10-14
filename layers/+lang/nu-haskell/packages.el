@@ -30,6 +30,7 @@
 ;;; Code:
 (defconst nu-haskell-packages
   '((company-ghc :requires company)
+    company-ghci
     haskell-mode
     ggtags
     ghc))
@@ -37,34 +38,23 @@
 (defun nu-haskell/init-company-ghc ()
   (use-package company-ghc
     :defer t
+    :init (spacemacs|add-company-backends
+            :backends (company-ghc company-dabbrev-code company-yasnippet)
+            :modes haskell-mode)))
+
+(defun nu-haskell/init-company-ghci ()
+  (use-package company-ghci
+    :defer t
     :init
     (progn
+      (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
       (spacemacs|add-company-backends
-        :backends (company-ghc company-dabbrev-code company-yasnippet)
+        :backends (company-ghci company-dabbrev-code company-yasnippet)
         :modes haskell-mode))))
-
 
 (defun nu-haskell/init-haskell-mode ()
   (use-package haskell-mode
     :defer t
-    :init
-    (add-hook 'haskell-mode-local-vars-hook
-              (lambda ()
-                (ghc-init)
-                (spacemacs/declare-prefix-for-mode 'haskell-mode "mm" "haskell/ghc-mod")
-                (spacemacs/set-leader-keys-for-major-mode 'haskell-mode
-                  "mt" 'ghc-insert-template-or-signature
-                  "mu" 'ghc-initial-code-from-signature
-                  "ma" 'ghc-auto
-                  "mf" 'ghc-refine
-                  "me" 'ghc-expand-th
-                  "mn" 'ghc-goto-next-hole
-                  "mp" 'ghc-goto-prev-hole
-                  "m>" 'ghc-make-indent-deeper
-                  "m<" 'ghc-make-indent-shallower)
-                (when (configuration-layer/package-used-p 'flycheck)
-                  (set-face-attribute 'ghc-face-error nil :underline nil)
-                  (set-face-attribute 'ghc-face-warn nil :underline nil))))
     :config
     (progn
       (setq haskell-stylish-on-save t
@@ -86,6 +76,23 @@
 
 (defun nu-haskell/init-ghc ()
   (use-package ghc
-    :defer t))
+    :defer t
+    :config
+    (progn
+      (defun init-ghc-mod ()
+        (interactive)
+        (ghc-init))
+      (spacemacs/declare-prefix-for-mode 'haskell-mode "mm" "haskell/ghc-mod")
+      (spacemacs/set-leader-keys-for-major-mode 'haskell-mode
+        "i"  'init-ghc-mod
+        "mt" 'ghc-insert-template-or-signature
+        "mu" 'ghc-initial-code-from-signature
+        "ma" 'ghc-auto
+        "mf" 'ghc-refine
+        "me" 'ghc-expand-th
+        "mn" 'ghc-goto-next-hole
+        "mp" 'ghc-goto-prev-hole
+        "m>" 'ghc-make-indent-deeper
+        "m<" 'ghc-make-indent-shallower))))
 
 ;;; packages.el ends here
