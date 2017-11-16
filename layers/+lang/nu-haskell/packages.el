@@ -29,8 +29,9 @@
 
 ;;; Code:
 (defconst nu-haskell-packages
-  '((company-ghc :requires company)
-    company-ghci
+  '(company-ghci
+    flycheck
+    (flycheck-stack :requires flycheck)
     haskell-mode
     ggtags
     ghc))
@@ -45,54 +46,55 @@
 (defun nu-haskell/init-company-ghci ()
   (use-package company-ghci
     :defer t
-    :init
-    (progn
-      (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-      (spacemacs|add-company-backends
-        :backends (company-ghci company-dabbrev-code company-yasnippet)
-        :modes haskell-mode))))
+    :init (spacemacs|add-company-backends
+            :backends (company-ghci company-dabbrev-code company-yasnippet)
+            :modes haskell-mode)))
+
+(defun nu-haskell/post-init-flycheck ()
+  (spacemacs/enable-flycheck 'haskell-mode))
+
+(defun nu-haskell/init-flycheck-stack ()
+  (use-package flycheck-stack
+    :defer t
+    :init (progn
+            (require 'flycheck-stack)
+            (add-hook 'haskell-mode-hook (lambda ()
+                                           (flycheck-select-checker 'stack))))))
 
 (defun nu-haskell/init-haskell-mode ()
   (use-package haskell-mode
     :defer t
+    :init
+    (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
     :config
     (progn
       (setq haskell-stylish-on-save t
             haskell-interactive-popup-errors nil
-            haskell-tags-on-save t
+            haskell-tags-on-save nil
             haskell-process-auto-import-loaded-modules t
             haskell-process-type 'stack-ghci)
 
+      (defun haskell-process-do-type-on-prev-line ()
+        (interactive)
+        (haskell-process-do-type 1))
+
       (spacemacs/set-leader-keys-for-major-mode 'haskell-mode
+        "F"  'haskell-mode-stylish-buffer
+
         "sb" 'haskell-process-load-file
         "sc" 'haskell-interactive-mode-clear
         "ss" 'haskell-interactive-switch
 
-        "ht" 'haskell-process-do-type
-        "hi" 'haskell-process-do-info))))
+        "ht" 'haskell-process-do-type-on-prev-line
+        "hT" 'haskell-process-do
+        "hi" 'haskell-process-do-info)
+      )))
 
 (defun nu-haskell/post-init-ggtags ()
   (add-hook 'haskell-mode-local-vars-hook #'spacemacs/ggtags-mode-enable))
 
 (defun nu-haskell/init-ghc ()
   (use-package ghc
-    :defer t
-    :config
-    (progn
-      (defun init-ghc-mod ()
-        (interactive)
-        (ghc-init))
-      (spacemacs/declare-prefix-for-mode 'haskell-mode "mm" "haskell/ghc-mod")
-      (spacemacs/set-leader-keys-for-major-mode 'haskell-mode
-        "i"  'init-ghc-mod
-        "mt" 'ghc-insert-template-or-signature
-        "mu" 'ghc-initial-code-from-signature
-        "ma" 'ghc-auto
-        "mf" 'ghc-refine
-        "me" 'ghc-expand-th
-        "mn" 'ghc-goto-next-hole
-        "mp" 'ghc-goto-prev-hole
-        "m>" 'ghc-make-indent-deeper
-        "m<" 'ghc-make-indent-shallower))))
+    :defer t))
 
 ;;; packages.el ends here
